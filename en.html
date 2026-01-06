@@ -202,6 +202,9 @@
             background-color: rgba(0, 0, 0, 0.02);
         }
         
+        .data-table tr:nth-child(odd) {
+            background-color: white;
+        }
         .arena-selector {
             display: flex;
             gap: 15px;
@@ -1967,32 +1970,7 @@ function updateNormalRewardsTable() {
         { key: 'legendaryCard', name: 'Legendary Card' },
         { key: 'heroCard', name: 'Champion Card' }
     ];
-    
-    const visibleRewardTypes = [];
-    
-    rewardTypes.forEach(rewardType => {
-        let hasValue = false;
-        
-        const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar'];
-        starLevels.forEach(starLevel => {
-            const starData = arena[starLevel];
-            if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                hasValue = true;
-            }
-        });
-        
-        if (hasValue) {
-            visibleRewardTypes.push(rewardType);
-        }
-    });
-    
-    let headerRow = '<tr><th>Chest Level</th>';
-    visibleRewardTypes.forEach(rewardType => {
-        headerRow += `<th>${rewardType.name}</th>`;
-    });
-    headerRow += '</tr>';
-    rewardsTable.innerHTML = headerRow;
-    
+      
     const starLevels = [
         { name: '1-Star', key: 'oneStar' },
         { name: '2-Star', key: 'twoStar' },
@@ -2000,21 +1978,40 @@ function updateNormalRewardsTable() {
         { name: '4-Star', key: 'fourStar' }
     ];
     
+    let tableHTML = '<thead><tr><th>Category</th>';
     starLevels.forEach(star => {
-        const starData = arena[star.key];
-        if (!starData) return;
+        tableHTML += `<th>${star.name}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+    
+    rewardTypes.forEach(rewardType => {
+        let rowHTML = `<tr><td>${rewardType.name}</td>`;
         
-        let rowHTML = `<tr><td>${star.name}</td>`;
-        
-        visibleRewardTypes.forEach(rewardType => {
+        starLevels.forEach(star => {
+            const starData = arena[star.key];
             const value = starData[rewardType.key] || 0;
-            rowHTML += `<td>${value}</td>`;
+            
+             let valueClass = '';
+            if (value >= 1000) {
+                valueClass = 'probability-high';
+            } else if (value >= 100) {
+                valueClass = 'probability-medium';
+            } else if (value > 0) {
+                valueClass = 'probability-low';
+            }
+            
+            const displayValue = value > 0 ? value : '-';
+            rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
         });
         
         rowHTML += '</tr>';
-        rewardsTable.innerHTML += rowHTML;
+        tableHTML += rowHTML;
     });
+
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
 }
+
         // 初始化魔法宝箱竞技场等级选择器
         function initMagicArenaSelector() {
             const arenaLevelSelect = document.getElementById('magic-arena-level');
@@ -2057,32 +2054,7 @@ function updateNormalRewardsTable() {
                 { key: 'evolutionShard', name: 'Evolution Shard' },
                 { key: 'evolutionCard', name: 'Full Evolution' }
             ];
-            
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                let hasValue = false;
-                
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            let headerRow = '<tr><th>Star Level</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            rewardsTable.innerHTML = headerRow;
-            
+                       
             const starLevels = [
                 { name: '1-Star', key: 'oneStar' },
                 { name: '2-Star', key: 'twoStar' },
@@ -2091,22 +2063,39 @@ function updateNormalRewardsTable() {
                 { name: '5-Star', key: 'fiveStar' }
             ];
             
+            let tableHTML = '<thead><tr><th>Category</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
+                tableHTML += `<th>${star.name}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+    
+              rewardTypes.forEach(rewardType => {
+                let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+                starLevels.forEach(star => {
+                    const starData = arena[star.key];
                     const value = starData[rewardType.key] || 0;
-                    rowHTML += `<td>${value}</td>`;
+            
+                    let valueClass = '';
+                    if (value >= 1000) {
+                        valueClass = 'probability-high';
+                    } else if (value >= 100) {
+                        valueClass = 'probability-medium';
+                    } else if (value > 0) {
+                        valueClass = 'probability-low';
+                    }
+            
+                    const displayValue = value > 0 ? value : '-';
+                    rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
                 });
                 
-                rowHTML += '</tr>';
-                rewardsTable.innerHTML += rowHTML;
-            });
-        }
-
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
+}
 
         // 初始化赛季宝箱竞技场选择器
         function initSeasonArenaSelector() {
@@ -2147,32 +2136,7 @@ function updateNormalRewardsTable() {
                 { key: 'seasonEvolutionShard', name: 'Seasonal Evolution Shard' },
                 { key: 'seasonEvolutionCard', name: 'Seasonal Full Evolution' }
             ];
-            
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                let hasValue = false;
-                
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            let headerRow = '<tr><th>Star Level</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            rewardsTable.innerHTML = headerRow;
-            
+   
             const starLevels = [
                 { name: '1-Star', key: 'oneStar' },
                 { name: '2-Star', key: 'twoStar' },
@@ -2181,21 +2145,39 @@ function updateNormalRewardsTable() {
                 { name: '5-Star', key: 'fiveStar' }
             ];
             
+            let tableHTML = '<thead><tr><th>Category</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
-                    const value = starData[rewardType.key] || 0;
-                    rowHTML += `<td>${value}</td>`;
-                });
-                
-                rowHTML += '</tr>';
-                rewardsTable.innerHTML += rowHTML;
+                tableHTML += `<th>${star.name}</th>`;
             });
-        }
+            tableHTML += '</tr></thead><tbody>';
+  
+            rewardTypes.forEach(rewardType => {
+                let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+        starLevels.forEach(star => {
+            const starData = arena[star.key];
+            const value = starData[rewardType.key] || 0;
+ 
+                    let valueClass = '';
+                    if (value >= 1000) {
+                        valueClass = 'probability-high';
+                    } else if (value >= 100) {
+                        valueClass = 'probability-medium';
+                    } else if (value > 0) {
+                        valueClass = 'probability-low';
+                    }
+            
+                    const displayValue = value > 0 ? value : '-';
+                    rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
+                });
+        
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
+}
 
         // 初始化赛季宝箱奖励概率选择器
         function initSeasonProbabilitySelector() {
@@ -2235,32 +2217,7 @@ function updateNormalRewardsTable() {
                 { key: 'seasonEvolutionShard', name: 'Seasonal Evolution Shard' },
                 { key: 'seasonEvolutionCard', name: 'Seasonal Full Evolution' }
             ];
-            
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                let hasValue = false;
-                
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            let headerRow = '<tr><th>Star Level</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            probabilityTable.innerHTML = headerRow;
-            
+                       
             const starLevels = [
                 { name: '1-Star', key: 'oneStar' },
                 { name: '2-Star', key: 'twoStar' },
@@ -2269,15 +2226,19 @@ function updateNormalRewardsTable() {
                 { name: '5-Star', key: 'fiveStar' }
             ];
             
+            let tableHTML = '<thead><tr><th>Category</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
-                    const probability = starData[rewardType.key] || 0;
-                    
+                tableHTML += `<th>${star.name}</th>`;
+          });
+            tableHTML += '</tr></thead><tbody>';
+    
+          rewardTypes.forEach(rewardType => {
+              let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+              starLevels.forEach(star => {
+                  const starData = arena[star.key];
+                  const probability = starData[rewardType.key] || 0;          
+          
                     let probabilityClass = '';
                     if (probability >= 0.5) {
                         probabilityClass = 'probability-high';
@@ -2291,10 +2252,13 @@ function updateNormalRewardsTable() {
                     rowHTML += `<td class="${probabilityClass}">${displayValue}</td>`;
                 });
                 
-                rowHTML += '</tr>';
-                probabilityTable.innerHTML += rowHTML;
-            });
-        }
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    probabilityTable.innerHTML = tableHTML;
+}
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', () => {
