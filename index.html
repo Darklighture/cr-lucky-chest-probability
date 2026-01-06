@@ -201,6 +201,10 @@
         .data-table tr:nth-child(even) {
             background-color: rgba(0, 0, 0, 0.02);
         }
+
+        .data-table tr:nth-child(odd) {
+            background-color: white;
+        }
         
         .arena-selector {
             display: flex;
@@ -261,14 +265,14 @@
             font-weight: 600;
         }
 
-.chest-content {
-    display: none;
-}
+        .chest-content {
+            display: none;
+        }
 
-.chest-content.active {
-    display: block;
-    animation: fadeIn 0.5s ease;
-}
+        .chest-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
         
         .footer {
             text-align: center;
@@ -799,7 +803,7 @@
                 </div>
                 
                 <div class="reward-card">
-                    <h3 class="reward-title">奖励详情</h3>
+                    <h3 class="reward-title">概率详情</h3>
                     <table class="data-table" id="season-probability-table">
                         <!-- 表格将通过JavaScript动态填充 -->
                     </table>
@@ -1996,36 +2000,6 @@
         { key: 'heroCard', name: '英雄卡' }
     ];
     
-    // 找出在当前竞技场中有值的奖励类型
-    const visibleRewardTypes = [];
-    
-    rewardTypes.forEach(rewardType => {
-        // 检查所有星级中是否有非零值
-        let hasValue = false;
-        
-        // 检查所有星级
-        const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar'];
-        starLevels.forEach(starLevel => {
-            const starData = arena[starLevel];
-            if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                hasValue = true;
-            }
-        });
-        
-        if (hasValue) {
-            visibleRewardTypes.push(rewardType);
-        }
-    });
-    
-    // 创建表头 - 只显示有值的列
-    let headerRow = '<tr><th>宝箱星级</th>';
-    visibleRewardTypes.forEach(rewardType => {
-        headerRow += `<th>${rewardType.name}</th>`;
-    });
-    headerRow += '</tr>';
-    rewardsTable.innerHTML = headerRow;
-    
-    // 生成不同星级的数据行
     const starLevels = [
         { name: '一星', key: 'oneStar' },
         { name: '二星', key: 'twoStar' },
@@ -2033,21 +2007,43 @@
         { name: '四星', key: 'fourStar' }
     ];
     
+    // 创建表头
+    let tableHTML = '<thead><tr><th>奖励类型</th>';
     starLevels.forEach(star => {
-        const starData = arena[star.key];
-        if (!starData) return;
+        tableHTML += `<th>${star.name}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+     
+    // 生成每种奖励类型的数据行
+    rewardTypes.forEach(rewardType => {
+        let rowHTML = `<tr><td>${rewardType.name}</td>`;
         
-        let rowHTML = `<tr><td>${star.name}</td>`;
-        
-        visibleRewardTypes.forEach(rewardType => {
+        starLevels.forEach(star => {
+            const starData = arena[star.key];
             const value = starData[rewardType.key] || 0;
-            rowHTML += `<td>${value}</td>`;
+            
+            // 根据数值大小添加不同的样式类
+            let valueClass = '';
+            if (value >= 1000) {
+                valueClass = 'probability-high';
+            } else if (value >= 100) {
+                valueClass = 'probability-medium';
+            } else if (value > 0) {
+                valueClass = 'probability-low';
+            }
+            
+            const displayValue = value > 0 ? value : '-';
+            rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
         });
         
         rowHTML += '</tr>';
-        rewardsTable.innerHTML += rowHTML;
+        tableHTML += rowHTML;
     });
+
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
 }
+
 
         // 初始化魔法宝箱竞技场等级选择器
         function initMagicArenaSelector() {
@@ -2068,7 +2064,7 @@
             updateMagicRewardsTable();
         }
         
-        // 更新魔法宝箱奖励表格 - 动态生成列，不显示值为0的列
+        // 更新魔法宝箱奖励表格
         function updateMagicRewardsTable() {
             const arenaRange = document.getElementById('magic-arena-level').value;
             const rewardsTable = document.getElementById('magic-rewards-table');
@@ -2099,37 +2095,7 @@
                 { key: 'evolutionShard', name: '进化碎片' },
                 { key: 'evolutionCard', name: '进化卡' }
             ];
-            
-            // 找出在当前竞技场中有值的奖励类型
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                // 检查所有星级中是否有非零值
-                let hasValue = false;
-                
-                // 检查所有星级
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            // 创建表头 - 只显示有值的列
-            let headerRow = '<tr><th>宝箱星级</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            rewardsTable.innerHTML = headerRow;
-            
-            // 生成不同星级的数据行
+ 
             const starLevels = [
                 { name: '一星', key: 'oneStar' },
                 { name: '二星', key: 'twoStar' },
@@ -2137,22 +2103,43 @@
                 { name: '四星', key: 'fourStar' },
                 { name: '五星', key: 'fiveStar' }
             ];
-            
+                     
+            // 创建表头
+            let tableHTML = '<thead><tr><th>奖励类型</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
+                tableHTML += `<th>${star.name}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+    
+            // 生成每种奖励类型的数据行
+            rewardTypes.forEach(rewardType => {
+                let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+                starLevels.forEach(star => {
+                    const starData = arena[star.key];
                     const value = starData[rewardType.key] || 0;
-                    rowHTML += `<td>${value}</td>`;
+            
+                    // 根据数值大小添加不同的样式类
+                    let valueClass = '';
+                    if (value >= 1000) {
+                        valueClass = 'probability-high';
+                    } else if (value >= 100) {
+                        valueClass = 'probability-medium';
+                    } else if (value > 0) {
+                        valueClass = 'probability-low';
+                    }
+            
+                    const displayValue = value > 0 ? value : '-';
+                    rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
                 });
                 
-                rowHTML += '</tr>';
-                rewardsTable.innerHTML += rowHTML;
-            });
-        }
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
+}
 
         // 初始化赛季宝箱竞技场等级选择器
         function initSeasonArenaSelector() {
@@ -2173,7 +2160,7 @@
             updateSeasonRewardsTable();
         }
         
-        // 更新赛季宝箱奖励表格 - 动态生成列，不显示值为0的列
+        // 更新赛季宝箱奖励表格 
         function updateSeasonRewardsTable() {
             const arenaRange = document.getElementById('season-arena-level').value;
             const rewardsTable = document.getElementById('season-rewards-table');
@@ -2200,36 +2187,6 @@
                 { key: 'seasonEvolutionCard', name: '赛季进化卡' }
             ];
             
-            // 找出在当前竞技场中有值的奖励类型
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                // 检查所有星级中是否有非零值
-                let hasValue = false;
-                
-                // 检查所有星级
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            // 创建表头 - 只显示有值的列
-            let headerRow = '<tr><th>宝箱星级</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            rewardsTable.innerHTML = headerRow;
-            
-            // 生成不同星级的数据行
             const starLevels = [
                 { name: '一星', key: 'oneStar' },
                 { name: '二星', key: 'twoStar' },
@@ -2237,22 +2194,43 @@
                 { name: '四星', key: 'fourStar' },
                 { name: '五星', key: 'fiveStar' }
             ];
-            
+             
+            // 创建表头 
+            let tableHTML = '<thead><tr><th>奖励类型</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
-                    const value = starData[rewardType.key] || 0;
-                    rowHTML += `<td>${value}</td>`;
-                });
-                
-                rowHTML += '</tr>';
-                rewardsTable.innerHTML += rowHTML;
+                tableHTML += `<th>${star.name}</th>`;
             });
-        }
+            tableHTML += '</tr></thead><tbody>';
+
+           // 生成每种奖励类型的数据行        
+            rewardTypes.forEach(rewardType => {
+                let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+        starLevels.forEach(star => {
+            const starData = arena[star.key];
+            const value = starData[rewardType.key] || 0;
+            
+           // 根据数值大小添加不同的样式类
+                    let valueClass = '';
+                    if (value >= 1000) {
+                        valueClass = 'probability-high';
+                    } else if (value >= 100) {
+                        valueClass = 'probability-medium';
+                    } else if (value > 0) {
+                        valueClass = 'probability-low';
+                    }
+            
+                    const displayValue = value > 0 ? value : '-';
+                    rowHTML += `<td class="${valueClass}">${displayValue}</td>`;
+                });
+        
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    rewardsTable.innerHTML = tableHTML;
+}
 
         // 初始化赛季宝箱奖励概率选择器
         function initSeasonProbabilitySelector() {
@@ -2299,37 +2277,7 @@
                 { key: 'seasonEvolutionShard', name: '赛季进化碎片' },
                 { key: 'seasonEvolutionCard', name: '赛季进化卡' }
             ];
-            
-            // 找出在当前竞技场中有概率值的奖励类型
-            const visibleRewardTypes = [];
-            
-            rewardTypes.forEach(rewardType => {
-                // 检查所有星级中是否有非零概率
-                let hasValue = false;
-                
-                // 检查所有星级
-                const starLevels = ['oneStar', 'twoStar', 'threeStar', 'fourStar', 'fiveStar'];
-                starLevels.forEach(starLevel => {
-                    const starData = arena[starLevel];
-                    if (starData && starData[rewardType.key] && starData[rewardType.key] > 0) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    visibleRewardTypes.push(rewardType);
-                }
-            });
-            
-            // 创建表头 - 只显示有概率值的列
-            let headerRow = '<tr><th>宝箱星级</th>';
-            visibleRewardTypes.forEach(rewardType => {
-                headerRow += `<th>${rewardType.name}</th>`;
-            });
-            headerRow += '</tr>';
-            probabilityTable.innerHTML = headerRow;
-            
-            // 生成不同星级的数据行
+
             const starLevels = [
                 { name: '一星', key: 'oneStar' },
                 { name: '二星', key: 'twoStar' },
@@ -2337,16 +2285,22 @@
                 { name: '四星', key: 'fourStar' },
                 { name: '五星', key: 'fiveStar' }
             ];
-            
+                      
+            // 创建表头
+            let tableHTML = '<thead><tr><th>奖励类型</th>';
             starLevels.forEach(star => {
-                const starData = arena[star.key];
-                if (!starData) return;
-                
-                let rowHTML = `<tr><td>${star.name}</td>`;
-                
-                visibleRewardTypes.forEach(rewardType => {
-                    const probability = starData[rewardType.key] || 0;
-                    
+                tableHTML += `<th>${star.name}</th>`;
+          });
+            tableHTML += '</tr></thead><tbody>';
+    
+          // 生成每种奖励类型的数据行
+          rewardTypes.forEach(rewardType => {
+              let rowHTML = `<tr><td>${rewardType.name}</td>`;
+        
+              starLevels.forEach(star => {
+                  const starData = arena[star.key];
+                  const probability = starData[rewardType.key] || 0;          
+          
                     // 根据概率值添加不同的样式类
                     let probabilityClass = '';
                     if (probability >= 0.5) {
@@ -2361,10 +2315,13 @@
                     rowHTML += `<td class="${probabilityClass}">${displayValue}</td>`;
                 });
                 
-                rowHTML += '</tr>';
-                probabilityTable.innerHTML += rowHTML;
-            });
-        }
+        rowHTML += '</tr>';
+        tableHTML += rowHTML;
+    });
+    
+    tableHTML += '</tbody>';
+    probabilityTable.innerHTML = tableHTML;
+}
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', () => {
